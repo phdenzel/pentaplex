@@ -1,0 +1,11 @@
+#+TITLE: pentaplex
+#+AUTHOR: phdenzel
+
+  pentaplex - 
+
+*** Usage
+    
+    To run pentaplex type:
+    #+BEGIN_SRC shell :exports none
+      ./pentaplex <scan.jpg> --out <output.jpg>
+    #+END_SRC
