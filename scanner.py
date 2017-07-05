@@ -7,8 +7,9 @@ Scanner transform for images of rectangular shapes
 # # Module imports
 import sys
 import os
-import cv2
 import numpy as np
+import math
+import cv2
 import rect
 from mkpath import mkdir_p
 VERBOSE = True
@@ -56,6 +57,7 @@ def primary_transf(rgba, roundup=127, rounddown=127):
 image = cv2.imread(filename)
 width, height, channels = image.shape
 aspr = float(width)/height
+_width, _height = int(800*aspr), 800
 # verbosity
 if VERBOSE:
     print("Image dimensions:\t{}x{} in {} channels".format(
@@ -63,67 +65,65 @@ if VERBOSE:
 
 # Resize image
 # adjust dimensions if important content is lost
-image = cv2.resize(image, (int(800*aspr), 800))
+image = cv2.resize(image, (_width, _height))
 # verbosity
 if VERBOSE:
-    print("Resizing to {}x{}...".format(int(800*aspr), 800))
+    print("Resizing to {}x{}...".format(_width, _height))
 
 # Original
 orig = image.copy()
 
 # Some transforms
 contrast = primary_transf(image, roundup=177, rounddown=77)
-
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-filtered = cv2.bilateralFilter(gray, 1, 10, 120)
-kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7))
-dilated = cv2.dilate(gray, kernel)
-
-# blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-blurred = cv2.medianBlur(gray, 15)
-# verbosity
 if VERBOSE:
     print("Grayscaling...")
-
-# Canny Edge Detection
-edged = cv2.Canny(dilated, 10, 250)
-edged_orig = edged.copy()
-# verbosity
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+if VERBOSE:
+    print("Blurring...")
+blurred = cv2.bilateralFilter(gray, 1, 10, 120)
+# blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+# blurred = cv2.medianBlur(gray, 15)
 if VERBOSE:
     print("Running Canny edge detection...")
+kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7))
+dilated = cv2.dilate(gray, kernel)
+edged = cv2.Canny(dilated, 10, 250)
+edged_orig = edged.copy()
+closed = cv2.morphologyEx(edged, cv2.MORPH_CLOSE, kernel)
 
 
 # Contours in edged image
-_, contours, _ = cv2.findContours(edged.copy(),
-                                  cv2.RETR_LIST,
-                                  cv2.CHAIN_APPROX_NONE)
-# _, contours, _ = cv2.findContours(dilated.copy(),
-#                                   cv2.RETR_LIST,
-#                                   cv2.CHAIN_APPROX_SIMPLE)
+if VERBOSE:
+    print("Finding contours...")
+_, contours, h = cv2.findContours(
+    closed, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+# _, contours, _ = cv2.findContours(
+#     dilated, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 contours = sorted(contours, key=cv2.contourArea, reverse=True)
-
-# Approximate contour
-for c in contours:
-    p = cv2.arcLength(c, True)
-    approx = cv2.approxPolyDP(c, 0.02*p, True)
-    r = cv2.boundingRect(c)
-    
-    if len(approx) == 4:
-        break
-# target = rect.angle(target)
-# verbosity
+# approximate contour
 if VERBOSE:
     print("Filtering edge contours...")
+for c in contours:
+    p = cv2.arcLength(c, True)
+    # rec = 
+    # box = 
+    approx = cv2.approxPolyDP(c, 0.1*p, True)
+    if len(approx) == 4:
+        target = approx
+        break
 
 # Mapping target points to 800x800 quadrilateral
 approx = rect.ify(target)
-pts2 = np.float32([[0, 0], [800, 0], [800, 800], [0, 800]])
-
-M = cv2.getPerspectiveTransform(approx, pts2)
-dst = cv2.warpPerspective(orig, M, (800, 800))
-# verbosity
 if VERBOSE:
     print("Transforming perspective...")
+# Zoom 500%
+dstw = 500 * int(math.ceil(0.005*(approx[1][0]+approx[2][0]
+                                  - approx[0][0]-approx[3][0])))
+dsth = 500 * int(math.ceil(0.005*(approx[2][1]+approx[3][1]
+                                  - approx[1][1]-approx[0][1])))
+pts2 = np.float32([[0, 0], [dstw, 0], [dstw, dsth], [0, dsth]])
+M = cv2.getPerspectiveTransform(approx, pts2)
+dst = cv2.warpPerspective(orig, M, (dstw, dsth))
 
 cv2.drawContours(image, [target], -1, (0, 255, 0), 2)
 dst = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
@@ -141,31 +141,30 @@ if VERBOSE:
     print("Thresholding warped images..")
 
 mkdir_p(root+"tmp/")
-cv2.imwrite(root+"tmp/Original.jpg", orig)
-cv2.imwrite(root+"tmp/Original Gray.jpg", gray)
-cv2.imwrite(root+"tmp/Original Blurred.jpg", blurred)
-cv2.imwrite(root+"tmp/Original Edged.jpg", edged_orig)
-cv2.imwrite(root+"tmp/Outline.jpg", image)
+cv2.imwrite(root+"tmp/_dst.jpg", dst)
+cv2.imwrite(root+"tmp/Blurred.jpg", blurred)
 cv2.imwrite(root+"tmp/Dilated.jpg", dilated)
+cv2.imwrite(root+"tmp/Edged.jpg", edged_orig)
+cv2.imwrite(root+"tmp/Gray.jpg", gray)
+cv2.imwrite(root+"tmp/Original.jpg", orig)
+cv2.imwrite(root+"tmp/Outline.jpg", image)
 cv2.imwrite(root+"tmp/Primary.jpg", contrast)
 cv2.imwrite(root+"tmp/Thresh Binary.jpg", th1)
-cv2.imwrite(root+"tmp/Thresh mean.jpg", th2)
-cv2.imwrite(root+"tmp/Thresh gauss.jpg", th3)
-cv2.imwrite(root+"tmp/Otsu's.jpg", th4)
-cv2.imwrite(root+"tmp/dst.jpg", dst)
+cv2.imwrite(root+"tmp/Thresh Mean.jpg", th2)
+cv2.imwrite(root+"tmp/Thresh Gauss.jpg", th3)
+cv2.imwrite(root+"tmp/Otsu.jpg", th4)
 # verbosity
 if VERBOSE:
     print("Saving transforms in tmp/ directory...")
 
 # # Other thresholding methods
-ret, thresh1 = cv2.threshold(dst, 127, 255, cv2.THRESH_BINARY)
-ret, thresh2 = cv2.threshold(dst, 127, 255, cv2.THRESH_BINARY_INV)
-ret, thresh3 = cv2.threshold(dst, 127, 255, cv2.THRESH_TRUNC)
-ret, thresh4 = cv2.threshold(dst, 127, 255, cv2.THRESH_TOZERO)
-ret, thresh5 = cv2.threshold(dst, 127, 255, cv2.THRESH_TOZERO_INV)
-
-cv2.imwrite(root+"tmp/Thresh Binary.jpg", thresh1)
-cv2.imwrite(root+"tmp/Thresh Binary_INV.jpg", thresh2)
-cv2.imwrite(root+"tmp/Thresh Trunch.jpg", thresh3)
-cv2.imwrite(root+"tmp/Thresh TOZERO.jpg", thresh4)
-cv2.imwrite(root+"tmp/Thresh TOZERO_INV.jpg", thresh5)
+# ret, thresh1 = cv2.threshold(dst, 127, 255, cv2.THRESH_BINARY)
+# ret, thresh2 = cv2.threshold(dst, 127, 255, cv2.THRESH_BINARY_INV)
+# ret, thresh3 = cv2.threshold(dst, 127, 255, cv2.THRESH_TRUNC)
+# ret, thresh4 = cv2.threshold(dst, 127, 255, cv2.THRESH_TOZERO)
+# ret, thresh5 = cv2.threshold(dst, 127, 255, cv2.THRESH_TOZERO_INV)
+# cv2.imwrite(root+"tmp/Thresh Binary.jpg", thresh1)
+# cv2.imwrite(root+"tmp/Thresh Binary_INV.jpg", thresh2)
+# cv2.imwrite(root+"tmp/Thresh Trunch.jpg", thresh3)
+# cv2.imwrite(root+"tmp/Thresh TOZERO.jpg", thresh4)
+# cv2.imwrite(root+"tmp/Thresh TOZERO_INV.jpg", thresh5)
