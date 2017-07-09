@@ -7,10 +7,10 @@ Scanner transform for images of rectangular shapes
 # # Module imports
 import sys
 import os
-import numpy as np
+from shutil import rmtree
 import math
+import numpy as np
 import cv2
-import rect
 from mkpath import mkdir_p
 VERBOSE = True
 
@@ -19,8 +19,10 @@ VERBOSE = True
 filename = sys.argv[1]
 if os.getcwd() in filename:
     filepath = filename
+    filename = filepath.split("/")[-1]
 else:
     filepath = os.getcwd()+'/'+filename
+    filename = filepath.split("/")[-1]
 # just making sure...
 try:
     # Python 3
@@ -38,13 +40,12 @@ root = "/".join(os.path.realpath(__file__).split("/")[:-1])+"/"
 # verbosity
 if VERBOSE:
     print("Repository in:\t\t{}".format(root))
-    print("Image file:\t\t{}".format(filepath.split("/")[-1]))
+    print("Image file:\t\t{}".format(filename))
 
 
-# #  Image manipulations
 def primary_transf(rgba, roundup=127, rounddown=127):
     """
-    Pronounce pictures with primary colors
+    Pronounce pictures with their primary colors beyond roundup and rounddown
     """
     width, height, channels = rgba.shape
     primary = rgba*1
@@ -53,8 +54,38 @@ def primary_transf(rgba, roundup=127, rounddown=127):
     return primary
 
 
-# Import image
-image = cv2.imread(filename)
+def rect_ify(h):
+    """
+    rect_ify - Rectify
+    """
+    h = h.reshape((4, 2))
+    hrect = np.zeros((4, 2), dtype=np.float32)
+
+    add = h.sum(1)
+    hrect[0] = h[np.argmin(add)]
+    hrect[2] = h[np.argmax(add)]
+
+    diff = np.diff(h, axis=1)
+    hrect[1] = h[np.argmin(diff)]
+    hrect[3] = h[np.argmax(diff)]
+
+    return hrect
+
+
+def rect_angle(h):
+    """
+    rect_angle - Transform a polygon close to a rectangle into a rectangle
+    """
+    hrect = np.zeros((4, 1, 2))
+    hrect[0] = h[np.argmin(h[:, :, 0])]
+    hrect[1] = h[np.argmax(h[:, :, 0])]
+    hrect[2] = h[np.argmax(h[:, :, 1])]
+    hrect[3] = h[np.argmin(h[:, :, 1])]
+    return hrect
+
+
+# # Import image
+image = cv2.imread(filepath)
 width, height, channels = image.shape
 aspr = float(width)/height
 _width, _height = int(800*aspr), 800
@@ -81,12 +112,12 @@ gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 if VERBOSE:
     print("Blurring...")
 blurred = cv2.bilateralFilter(gray, 1, 10, 120)
-# blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+blurred = cv2.GaussianBlur(blurred, (5, 5), 0)
 # blurred = cv2.medianBlur(gray, 15)
 if VERBOSE:
     print("Running Canny edge detection...")
 kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7))
-dilated = cv2.dilate(gray, kernel)
+dilated = cv2.dilate(blurred, kernel)
 edged = cv2.Canny(dilated, 10, 250)
 edged_orig = edged.copy()
 closed = cv2.morphologyEx(edged, cv2.MORPH_CLOSE, kernel)
@@ -105,18 +136,20 @@ if VERBOSE:
     print("Filtering edge contours...")
 for c in contours:
     p = cv2.arcLength(c, True)
-    # rec = 
-    # box = 
+    # rec =
+    # box =
     approx = cv2.approxPolyDP(c, 0.1*p, True)
     if len(approx) == 4:
         target = approx
         break
 
 # Mapping target points to 800x800 quadrilateral
-approx = rect.ify(target)
+approx = rect_ify(target)
 if VERBOSE:
     print("Transforming perspective...")
-# Zoom 500%
+
+# TODO: rotate if necessary
+
 dstw = 500 * int(math.ceil(0.005*(approx[1][0]+approx[2][0]
                                   - approx[0][0]-approx[3][0])))
 dsth = 500 * int(math.ceil(0.005*(approx[2][1]+approx[3][1]
@@ -138,21 +171,25 @@ th3 = cv2.adaptiveThreshold(dst, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
 ret2, th4 = cv2.threshold(dst, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 # verbosity
 if VERBOSE:
-    print("Thresholding warped images..")
+    print("Thresholding warped images...")
 
+rmtree(root+"tmp")
 mkdir_p(root+"tmp/")
-cv2.imwrite(root+"tmp/_dst.jpg", dst)
-cv2.imwrite(root+"tmp/Blurred.jpg", blurred)
-cv2.imwrite(root+"tmp/Dilated.jpg", dilated)
-cv2.imwrite(root+"tmp/Edged.jpg", edged_orig)
-cv2.imwrite(root+"tmp/Gray.jpg", gray)
-cv2.imwrite(root+"tmp/Original.jpg", orig)
-cv2.imwrite(root+"tmp/Outline.jpg", image)
-cv2.imwrite(root+"tmp/Primary.jpg", contrast)
-cv2.imwrite(root+"tmp/Thresh Binary.jpg", th1)
-cv2.imwrite(root+"tmp/Thresh Mean.jpg", th2)
-cv2.imwrite(root+"tmp/Thresh Gauss.jpg", th3)
-cv2.imwrite(root+"tmp/Otsu.jpg", th4)
+fname = filename.split('.')[0]
+imgid = fname.split('_')[-1]
+
+cv2.imwrite(root+"tmp/dst_"+imgid+".jpg", dst)
+cv2.imwrite(root+"tmp/blurred.jpg", blurred)
+cv2.imwrite(root+"tmp/dilated.jpg", dilated)
+cv2.imwrite(root+"tmp/edged.jpg", edged_orig)
+cv2.imwrite(root+"tmp/gray.jpg", gray)
+cv2.imwrite(root+"tmp/original.jpg", orig)
+cv2.imwrite(root+"tmp/outline.jpg", image)
+cv2.imwrite(root+"tmp/primary.jpg", contrast)
+cv2.imwrite(root+"tmp/thresh_binary.jpg", th1)
+cv2.imwrite(root+"tmp/thresh_mean.jpg", th2)
+cv2.imwrite(root+"tmp/thresh_gauss.jpg", th3)
+cv2.imwrite(root+"tmp/otsu.jpg", th4)
 # verbosity
 if VERBOSE:
     print("Saving transforms in tmp/ directory...")
