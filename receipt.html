@@ -1,0 +1,362 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>receipt module &#8212; pentaplex 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-receipt">
+<span id="receipt-module"></span><h1>receipt module<a class="headerlink" href="#module-receipt" title="Permalink to this headline">¶</a></h1>
+<p>A program to make sense of pentaplex’s outputs for receipt analysis</p>
+<p>&#64;author: phdenzel</p>
+<dl class="class">
+<dt id="receipt.Receipt">
+<em class="property">class </em><code class="descclassname">receipt.</code><code class="descname">Receipt</code><span class="sig-paren">(</span><em>file_id</em>, <em>total=None</em>, <em>market=None</em>, <em>date=None</em>, <em>time=None</em>, <em>auto=False</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Class that encompasses pentaplex’s receipt analysis</p>
+<dl class="method">
+<dt id="receipt.Receipt.check_img_id">
+<code class="descname">check_img_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.check_img_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if file_id is found in any pictures of imgs/</p>
+<dl class="docutils">
+<dt>Args/Kwargs:</dt>
+<dd>None</dd>
+<dt>Return:</dt>
+<dd>image; str; name string of the original image in imgs/ matching id</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="receipt.Receipt.check_ocr_id">
+<code class="descname">check_ocr_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.check_ocr_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if file_id is found in prp/</p>
+<dl class="docutils">
+<dt>Args/Kwargs:</dt>
+<dd>None</dd>
+<dt>Return:</dt>
+<dd>prepd, text: str, str; name string of preprocessed and ocr txt files</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="receipt.Receipt.check_scanner_id">
+<code class="descname">check_scanner_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.check_scanner_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if file_id is found in prp/ or tmp/</p>
+<dl class="docutils">
+<dt>Args/Kwargs:</dt>
+<dd>None</dd>
+<dt>Return:</dt>
+<dd><dl class="first last docutils">
+<dt>dst: str; name string of the scanned image in prp/ or tmp/ matching</dt>
+<dd>file_id</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="receipt.Receipt.clean_ocr">
+<code class="descname">clean_ocr</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.clean_ocr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clean the output of the OCR</p>
+<dl class="docutils">
+<dt>Args/Kwargs:</dt>
+<dd>None</dd>
+<dt>Return:</dt>
+<dd>text; list(str); cleaned text of newline characters and stuff</dd>
+</dl>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="receipt.Receipt.empty">
+<em class="property">classmethod </em><code class="descname">empty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructor for an empty receipt instance</p>
+<dl class="docutils">
+<dt>Return:</dt>
+<dd>instance: Receipt</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="receipt.Receipt.file_id">
+<code class="descname">file_id</code><a class="headerlink" href="#receipt.Receipt.file_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Property file_id specifying a receipt</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="receipt.Receipt.find_file">
+<code class="descname">find_file</code><span class="sig-paren">(</span><em>filetype</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.find_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find a file of given type
+(if not found preprocessing scripts are executed automatically,
+thus all the checks beforehand)</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>filetype: str; either ‘original’, ‘scan’, ‘preprocessed’, ‘config’,</dt>
+<dd>or ‘txt’</dd>
+</dl>
+</dd>
+<dt>Kwargs:</dt>
+<dd>None</dd>
+<dt>Return:</dt>
+<dd>f: str; path to specific file</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="receipt.Receipt.fuzzy_search">
+<code class="descname">fuzzy_search</code><span class="sig-paren">(</span><em>keyword</em>, <em>accuracy=0.6</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.fuzzy_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fuzzy search OCR output for a keyword and its possible value</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>keyword: str; a keywords after which is fuzzy searched</dd>
+<dt>Kwargs:</dt>
+<dd>accuracy: float; accuracy parameter for the fuzzy search algorithm</dd>
+<dt>Return:</dt>
+<dd>line: list(str); the line of the closest fuzzy search match</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="receipt.Receipt.imgd">
+<code class="descname">imgd</code><em class="property"> = '/Users/phdenzel/pentaplex/imgs/'</em><a class="headerlink" href="#receipt.Receipt.imgd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="receipt.Receipt.load_configs">
+<em class="property">static </em><code class="descname">load_configs</code><span class="sig-paren">(</span><em>config_path</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.load_configs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a yaml config file and return a objectified dictionary</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>config_path: str; path string to the yaml config file</dd>
+<dt>Kwargs:</dt>
+<dd>None</dd>
+<dt>Return:</dt>
+<dd>config: objectify instance; the read configurations</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="receipt.Receipt.parse_date">
+<code class="descname">parse_date</code><span class="sig-paren">(</span><em>date</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.parse_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse for the date on the receipt</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>date: str; argument to overwrite results</dd>
+<dt>Kwargs:</dt>
+<dd>None</dd>
+<dt>Return:</dt>
+<dd>date: str; matched date on the receipt</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="receipt.Receipt.parse_market">
+<code class="descname">parse_market</code><span class="sig-paren">(</span><em>market</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.parse_market" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse for the market the receipt is from</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>market: str; argument to overwrite results</dd>
+<dt>Kwargs:</dt>
+<dd>None</dd>
+<dt>Return:</dt>
+<dd>market: str; matched market</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="receipt.Receipt.parse_time">
+<code class="descname">parse_time</code><span class="sig-paren">(</span><em>time</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.parse_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse for the time on the receipt</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>time: str; argument to overwrite results</dd>
+<dt>Kwargs:</dt>
+<dd>None</dd>
+<dt>Return:</dt>
+<dd>time: str; matched time on the receipt</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="receipt.Receipt.parse_total">
+<code class="descname">parse_total</code><span class="sig-paren">(</span><em>total</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.parse_total" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse for the total on the receipt</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>total: str; argument to overwrite results</dd>
+<dt>Kwargs:</dt>
+<dd>None</dd>
+<dt>Return:</dt>
+<dd>total: str; matched total on the receipt</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="receipt.Receipt.print_properties">
+<code class="descname">print_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.print_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send properties to stdout</p>
+<dl class="docutils">
+<dt>Args/Kwargs/Return:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="receipt.Receipt.print_text">
+<code class="descname">print_text</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.print_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send properties to stdout</p>
+<dl class="docutils">
+<dt>Args/Kwargs/Return:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="receipt.Receipt.prpd">
+<code class="descname">prpd</code><em class="property"> = '/Users/phdenzel/pentaplex/prp/'</em><a class="headerlink" href="#receipt.Receipt.prpd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="receipt.Receipt.read_files">
+<code class="descname">read_files</code><span class="sig-paren">(</span><em>files</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.read_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read all files associated to the receipt</p>
+<dl class="docutils">
+<dt>Args/Kwargs:</dt>
+<dd>None</dd>
+<dt>Return:</dt>
+<dd>data: dict; analogue keys to files</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="receipt.Receipt.root">
+<code class="descname">root</code><em class="property"> = '/Users/phdenzel/pentaplex/'</em><a class="headerlink" href="#receipt.Receipt.root" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="receipt.Receipt.run_ocr">
+<code class="descname">run_ocr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.run_ocr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the ocr.sh script</p>
+<dl class="docutils">
+<dt>Args/Kwargs/Return:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="receipt.Receipt.run_scanner">
+<code class="descname">run_scanner</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.run_scanner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the scanner.py script</p>
+<dl class="docutils">
+<dt>Args/Kwargs/Return:</dt>
+<dd>None</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="receipt.Receipt.tmpd">
+<code class="descname">tmpd</code><em class="property"> = '/Users/phdenzel/pentaplex/tmp/'</em><a class="headerlink" href="#receipt.Receipt.tmpd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="receipt.Receipt.txtd">
+<code class="descname">txtd</code><em class="property"> = '/Users/phdenzel/pentaplex/txt/'</em><a class="headerlink" href="#receipt.Receipt.txtd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="receipt.imread">
+<code class="descclassname">receipt.</code><code class="descname">imread</code><span class="sig-paren">(</span><em>filename</em><span class="optional">[</span>, <em>flags</em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; retval<a class="headerlink" href="#receipt.imread" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">pentaplex</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, phdenzel.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/receipt.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
