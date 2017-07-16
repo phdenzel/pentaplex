@@ -1,0 +1,63 @@
+# Fuzzy finding configs
+
+# Match keys for total on receipts
+total_keys:
+  - summe
+  - sum
+  - gesamt
+  - gesamtbetrag
+  - total
+  - netto
+  - total netto
+  - total excl.
+  - total-eft
+  - total-eft chf
+  - zwischensumme
+  - bar
+  - mastercard
+  - maestrocard
+
+total_format: '\d+(\.\s?|,\s?|[^a-zA-Z\d])\d{2}'
+
+
+# Match keys for time on receipts
+time_keys:
+  - zeit
+
+# Matches time like 19:00
+# time_format: '([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]'
+time_format: '(\d{2})[:](\d{2})'
+
+
+# Match keys for date on receipts
+date_keys:
+  - datum
+  - date
+
+# Matches dates like 19.08.15 and 19. 08. 2015
+date_format: '(\d{2})[/.-](\d{2})[/.-](\d{4})'
+
+markets:
+  Coop:
+     - coop
+     - c o o p
+     - coop city
+     - coop genossenschaft
+  Migros:
+     - genossenschaft migros
+  Lidl:
+     - lidl
+  Aldi:
+     - aldi
+  Fristo:
+     - fristo
+  Dosenbach:
+     - dosenbach
+  Franz Carl Weber:
+     - franz carl weber
+  Leibundgut: # Bastelboutique
+     - leibundgut ag
+  Tankstelle:
+     - tamoil
+     - coop
+     - bp tankstelle

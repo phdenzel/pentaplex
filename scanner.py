@@ -89,6 +89,7 @@ image = cv2.imread(filepath)
 width, height, channels = image.shape
 aspr = float(width)/height
 _width, _height = int(800*aspr), 800
+_width, _height = width, height
 # verbosity
 if VERBOSE:
     print("Image dimensions:\t{}x{} in {} channels".format(
@@ -130,18 +131,30 @@ _, contours, h = cv2.findContours(
     closed, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 # _, contours, _ = cv2.findContours(
 #     dilated, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-contours = sorted(contours, key=cv2.contourArea, reverse=True)
+contours = sorted(contours, key=cv2.contourArea, reverse=True)[:5]
 # approximate contour
 if VERBOSE:
     print("Filtering edge contours...")
-for c in contours:
+for c in contours[1:]:
     p = cv2.arcLength(c, True)
-    # rec =
-    # box =
     approx = cv2.approxPolyDP(c, 0.1*p, True)
     if len(approx) == 4:
+        # rect = cv2.minAreaRect(approx)
+        # box = cv2.boxPoints(rect)
+        # box = np.int0(box)
+        # target = box
         target = approx
         break
+
+# outline target contour
+cv2.drawContours(image, [target], -1, (0, 0, 255), 5)
+while False:
+    cv2.startWindowThread()
+    cv2.namedWindow("Is this the window you want?", cv2.WINDOW_NORMAL)
+    cv2.imshow("Is this the window you want?", image)
+    cv2.imshow("Is this the window you want?", image)
+    cv2.waitKey(0)
+
 
 # Mapping target points to 800x800 quadrilateral
 approx = rect_ify(target)
@@ -150,17 +163,15 @@ if VERBOSE:
 
 # TODO: rotate if necessary
 
-dstw = 500 * int(math.ceil(0.005*(approx[1][0]+approx[2][0]
+dstw = 100 * int(math.ceil(0.005*(approx[1][0]+approx[2][0]
                                   - approx[0][0]-approx[3][0])))
-dsth = 500 * int(math.ceil(0.005*(approx[2][1]+approx[3][1]
+dsth = 100 * int(math.ceil(0.005*(approx[2][1]+approx[3][1]
                                   - approx[1][1]-approx[0][1])))
 pts2 = np.float32([[0, 0], [dstw, 0], [dstw, dsth], [0, dsth]])
 M = cv2.getPerspectiveTransform(approx, pts2)
 dst = cv2.warpPerspective(orig, M, (dstw, dsth))
 
-cv2.drawContours(image, [target], -1, (0, 255, 0), 2)
 dst = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
-
 
 # Threshold warped image
 ret, th1 = cv2.threshold(dst, 127, 255, cv2.THRESH_BINARY)
@@ -169,14 +180,14 @@ th2 = cv2.adaptiveThreshold(dst, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
 th3 = cv2.adaptiveThreshold(dst, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                             cv2.THRESH_BINARY, 11, 2)
 ret2, th4 = cv2.threshold(dst, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+
 # verbosity
 if VERBOSE:
     print("Thresholding warped images...")
 
 rmtree(root+"tmp")
 mkdir_p(root+"tmp/")
-fname = filename.split('.')[0]
-imgid = fname.split('_')[-1]
+imgid = filename.split('.')[0].split('_')[-1]
 
 cv2.imwrite(root+"tmp/dst_"+imgid+".jpg", dst)
 cv2.imwrite(root+"tmp/blurred.jpg", blurred)
