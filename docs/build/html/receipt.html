@@ -44,12 +44,12 @@
 <p>&#64;author: phdenzel</p>
 <dl class="class">
 <dt id="receipt.Receipt">
-<em class="property">class </em><code class="descclassname">receipt.</code><code class="descname">Receipt</code><span class="sig-paren">(</span><em>file_id</em>, <em>total=None</em>, <em>market=None</em>, <em>date=None</em>, <em>time=None</em>, <em>auto=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">receipt.</code><code class="descname">Receipt</code><span class="sig-paren">(</span><em>file_id</em>, <em>total=None</em>, <em>market=None</em>, <em>date=None</em>, <em>time=None</em>, <em>auto=False</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/2/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Class that encompasses pentaplex’s receipt analysis</p>
 <dl class="method">
 <dt id="receipt.Receipt.check_img_id">
-<code class="descname">check_img_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.check_img_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.check_img_id" title="Permalink to this definition">¶</a></dt>
+<code class="descname">check_img_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.check_img_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if file_id is found in any pictures of imgs/</p>
 <dl class="docutils">
 <dt>Args/Kwargs:</dt>
@@ -61,7 +61,7 @@
 
 <dl class="method">
 <dt id="receipt.Receipt.check_ocr_id">
-<code class="descname">check_ocr_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.check_ocr_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.check_ocr_id" title="Permalink to this definition">¶</a></dt>
+<code class="descname">check_ocr_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.check_ocr_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if file_id is found in prp/</p>
 <dl class="docutils">
 <dt>Args/Kwargs:</dt>
@@ -73,7 +73,7 @@
 
 <dl class="method">
 <dt id="receipt.Receipt.check_scanner_id">
-<code class="descname">check_scanner_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.check_scanner_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.check_scanner_id" title="Permalink to this definition">¶</a></dt>
+<code class="descname">check_scanner_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.check_scanner_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if file_id is found in prp/ or tmp/</p>
 <dl class="docutils">
 <dt>Args/Kwargs:</dt>
@@ -89,7 +89,7 @@
 
 <dl class="method">
 <dt id="receipt.Receipt.clean_ocr">
-<code class="descname">clean_ocr</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.clean_ocr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.clean_ocr" title="Permalink to this definition">¶</a></dt>
+<code class="descname">clean_ocr</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.clean_ocr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clean the output of the OCR</p>
 <dl class="docutils">
 <dt>Args/Kwargs:</dt>
@@ -101,7 +101,7 @@
 
 <dl class="classmethod">
 <dt id="receipt.Receipt.empty">
-<em class="property">classmethod </em><code class="descname">empty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.empty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.empty" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">empty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.empty" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructor for an empty receipt instance</p>
 <dl class="docutils">
 <dt>Return:</dt>
@@ -117,7 +117,7 @@
 
 <dl class="method">
 <dt id="receipt.Receipt.find_file">
-<code class="descname">find_file</code><span class="sig-paren">(</span><em>filetype</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.find_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.find_file" title="Permalink to this definition">¶</a></dt>
+<code class="descname">find_file</code><span class="sig-paren">(</span><em>filetype</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.find_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find a file of given type
 (if not found preprocessing scripts are executed automatically,
 thus all the checks beforehand)</p>
@@ -137,7 +137,7 @@ thus all the checks beforehand)</p>
 
 <dl class="method">
 <dt id="receipt.Receipt.fuzzy_search">
-<code class="descname">fuzzy_search</code><span class="sig-paren">(</span><em>keyword</em>, <em>accuracy=0.6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.fuzzy_search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.fuzzy_search" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fuzzy_search</code><span class="sig-paren">(</span><em>keyword</em>, <em>accuracy=0.6</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.fuzzy_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fuzzy search OCR output for a keyword and its possible value</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -156,7 +156,7 @@ thus all the checks beforehand)</p>
 
 <dl class="staticmethod">
 <dt id="receipt.Receipt.load_configs">
-<em class="property">static </em><code class="descname">load_configs</code><span class="sig-paren">(</span><em>config_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.load_configs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.load_configs" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">load_configs</code><span class="sig-paren">(</span><em>config_path</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.load_configs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a yaml config file and return a objectified dictionary</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -170,7 +170,7 @@ thus all the checks beforehand)</p>
 
 <dl class="method">
 <dt id="receipt.Receipt.parse_date">
-<code class="descname">parse_date</code><span class="sig-paren">(</span><em>date</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.parse_date"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.parse_date" title="Permalink to this definition">¶</a></dt>
+<code class="descname">parse_date</code><span class="sig-paren">(</span><em>date</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.parse_date" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse for the date on the receipt</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -184,7 +184,7 @@ thus all the checks beforehand)</p>
 
 <dl class="method">
 <dt id="receipt.Receipt.parse_market">
-<code class="descname">parse_market</code><span class="sig-paren">(</span><em>market</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.parse_market"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.parse_market" title="Permalink to this definition">¶</a></dt>
+<code class="descname">parse_market</code><span class="sig-paren">(</span><em>market</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.parse_market" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse for the market the receipt is from</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -198,7 +198,7 @@ thus all the checks beforehand)</p>
 
 <dl class="method">
 <dt id="receipt.Receipt.parse_time">
-<code class="descname">parse_time</code><span class="sig-paren">(</span><em>time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.parse_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.parse_time" title="Permalink to this definition">¶</a></dt>
+<code class="descname">parse_time</code><span class="sig-paren">(</span><em>time</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.parse_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse for the time on the receipt</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -212,7 +212,7 @@ thus all the checks beforehand)</p>
 
 <dl class="method">
 <dt id="receipt.Receipt.parse_total">
-<code class="descname">parse_total</code><span class="sig-paren">(</span><em>total</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.parse_total"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.parse_total" title="Permalink to this definition">¶</a></dt>
+<code class="descname">parse_total</code><span class="sig-paren">(</span><em>total</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.parse_total" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse for the total on the receipt</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -226,7 +226,7 @@ thus all the checks beforehand)</p>
 
 <dl class="method">
 <dt id="receipt.Receipt.print_properties">
-<code class="descname">print_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.print_properties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.print_properties" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.print_properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send properties to stdout</p>
 <dl class="docutils">
 <dt>Args/Kwargs/Return:</dt>
@@ -236,7 +236,7 @@ thus all the checks beforehand)</p>
 
 <dl class="method">
 <dt id="receipt.Receipt.print_text">
-<code class="descname">print_text</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.print_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.print_text" title="Permalink to this definition">¶</a></dt>
+<code class="descname">print_text</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.print_text" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send properties to stdout</p>
 <dl class="docutils">
 <dt>Args/Kwargs/Return:</dt>
@@ -251,7 +251,7 @@ thus all the checks beforehand)</p>
 
 <dl class="method">
 <dt id="receipt.Receipt.read_files">
-<code class="descname">read_files</code><span class="sig-paren">(</span><em>files</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.read_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.read_files" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_files</code><span class="sig-paren">(</span><em>files</em><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.read_files" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read all files associated to the receipt</p>
 <dl class="docutils">
 <dt>Args/Kwargs:</dt>
@@ -268,7 +268,7 @@ thus all the checks beforehand)</p>
 
 <dl class="method">
 <dt id="receipt.Receipt.run_ocr">
-<code class="descname">run_ocr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.run_ocr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.run_ocr" title="Permalink to this definition">¶</a></dt>
+<code class="descname">run_ocr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.run_ocr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run the ocr.sh script</p>
 <dl class="docutils">
 <dt>Args/Kwargs/Return:</dt>
@@ -278,7 +278,7 @@ thus all the checks beforehand)</p>
 
 <dl class="method">
 <dt id="receipt.Receipt.run_scanner">
-<code class="descname">run_scanner</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/receipt.html#Receipt.run_scanner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#receipt.Receipt.run_scanner" title="Permalink to this definition">¶</a></dt>
+<code class="descname">run_scanner</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#receipt.Receipt.run_scanner" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run the scanner.py script</p>
 <dl class="docutils">
 <dt>Args/Kwargs/Return:</dt>
