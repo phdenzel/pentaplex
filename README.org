@@ -23,3 +23,7 @@
     #+BEGIN_SRC shell
       ./pentaplex [optional: auto]
     #+END_SRC
+*** Documentation
+
+    For code documentation visit:
+    [[https://phdenzel.github.io/pentaplex/][https://phdenzel.github.io/pentaplex/]]
