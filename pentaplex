@@ -20,8 +20,9 @@ try:
     auto = sys.argv[1]
 except:
     auto = ""
-if auto is "auto":
+if auto == "auto":
     isauto = True
+    print("Auto-run on")
 else:
     isauto = False
 receipts = []
