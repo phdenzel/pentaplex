@@ -1,0 +1,553 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>receipt &#8212; pentaplex 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for receipt</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A program to make sense of pentaplex&#39;s outputs for receipt analysis</span>
+
+<span class="sd">@author: phdenzel</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">cv2</span> <span class="k">import</span> <span class="n">imread</span>
+<span class="kn">from</span> <span class="nn">difflib</span> <span class="k">import</span> <span class="n">get_close_matches</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># Python 3</span>
+    <span class="ne">FileNotFoundError</span>
+<span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
+    <span class="c1"># Python 2</span>
+    <span class="ne">FileNotFoundError</span> <span class="o">=</span> <span class="ne">IOError</span>
+
+
+<div class="viewcode-block" id="Receipt"><a class="viewcode-back" href="../receipt.html#receipt.Receipt">[docs]</a><span class="k">class</span> <span class="nc">Receipt</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class that encompasses pentaplex&#39;s receipt analysis</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;0.1&#39;</span>
+
+    <span class="n">root</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot;/&quot;</span>
+    <span class="n">imgd</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;imgs/&quot;</span><span class="p">])</span>
+    <span class="n">prpd</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;prp/&quot;</span><span class="p">])</span>
+    <span class="n">txtd</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;txt/&quot;</span><span class="p">])</span>
+    <span class="n">tmpd</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;tmp/&quot;</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_id</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">market</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">auto</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes a receipt by reading a file id</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">           file_id: str; the file ID unique to each picture of a receipt,</span>
+<span class="sd">                    e.g. IMG_0101010.JPG has file_id=&#39;0101010&#39;.</span>
+<span class="sd">                    If images in the imgs/ folder have different name formats,</span>
+<span class="sd">                    file_id is equal to the image&#39;s name w/o extension</span>
+
+<span class="sd">        Kwargs:</span>
+<span class="sd">           market: str; the market&#39;s name where the receipt is from</span>
+<span class="sd">           date:   str; the date when the receipt was received</span>
+<span class="sd">           total:  str; the total amount payed</span>
+<span class="sd">           auto:   bool; run scripts to scan and ocr a receipt</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">auto</span> <span class="o">=</span> <span class="n">auto</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="o">=</span> <span class="n">file_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configs</span> <span class="o">=</span> <span class="n">Receipt</span><span class="o">.</span><span class="n">load_configs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_files</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clean_ocr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;ocr_text&#39;</span><span class="p">])</span>
+        <span class="c1"># extract important info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_total</span><span class="p">(</span><span class="n">total</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">market</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_market</span><span class="p">(</span><span class="n">market</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_date</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_time</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Receipt.empty"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.empty">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">empty</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor for an empty receipt instance</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">           instance: Receipt</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">file_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Property file_id specifying a receipt</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_id</span>
+
+    <span class="nd">@file_id</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">file_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Property setter for file_id</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">           f_id: str; file ID (from original&#39;s name) designating the receipt</span>
+
+<span class="sd">        Kwargs/Return:</span>
+<span class="sd">           None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file_id</span> <span class="o">=</span> <span class="n">f_id</span>
+        <span class="c1"># search for an image with given file id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_img_id</span><span class="p">()</span>
+        <span class="c1"># collect relevant file paths</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;original&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_file</span><span class="p">(</span><span class="s1">&#39;original&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;scan&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_file</span><span class="p">(</span><span class="s1">&#39;scan&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;preprocessed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_file</span><span class="p">(</span><span class="s1">&#39;preprocessed&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;ocr_text&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_file</span><span class="p">(</span><span class="s1">&#39;txt&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_file</span><span class="p">(</span><span class="s1">&#39;config&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Receipt.find_file"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.find_file">[docs]</a>    <span class="k">def</span> <span class="nf">find_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filetype</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find a file of given type</span>
+<span class="sd">        (if not found preprocessing scripts are executed automatically,</span>
+<span class="sd">        thus all the checks beforehand)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">           filetype: str; either &#39;original&#39;, &#39;scan&#39;, &#39;preprocessed&#39;, &#39;config&#39;,</span>
+<span class="sd">                     or &#39;txt&#39;</span>
+
+<span class="sd">        Kwargs:</span>
+<span class="sd">           None</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">           f: str; path to specific file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Trying to run image scan...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run_scanner</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Trying to run preprocessing and OCR...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run_ocr</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">auto</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">dst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_scanner_id</span><span class="p">()</span>
+        <span class="n">prepd</span><span class="p">,</span> <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_ocr_id</span><span class="p">()</span>
+        <span class="c1"># go through cases</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">filetype</span> <span class="ow">is</span> <span class="s1">&#39;scan&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">Receipt</span><span class="o">.</span><span class="n">tmpd</span><span class="o">+</span><span class="n">dst</span>
+        <span class="k">elif</span> <span class="n">filetype</span> <span class="ow">is</span> <span class="s1">&#39;original&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">Receipt</span><span class="o">.</span><span class="n">tmpd</span><span class="o">+</span><span class="s2">&quot;original.jpg&quot;</span>
+        <span class="k">elif</span> <span class="n">filetype</span> <span class="ow">is</span> <span class="s1">&#39;preprocessed&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">Receipt</span><span class="o">.</span><span class="n">prpd</span><span class="o">+</span><span class="n">prepd</span>
+        <span class="k">elif</span> <span class="n">filetype</span> <span class="ow">is</span> <span class="s1">&#39;txt&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">Receipt</span><span class="o">.</span><span class="n">txtd</span><span class="o">+</span><span class="n">text</span>
+        <span class="k">elif</span> <span class="n">filetype</span> <span class="ow">is</span> <span class="s1">&#39;config&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">Receipt</span><span class="o">.</span><span class="n">root</span><span class="o">+</span><span class="s1">&#39;config.yml&#39;</span>
+        <span class="k">return</span> <span class="n">f</span></div>
+
+<div class="viewcode-block" id="Receipt.read_files"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.read_files">[docs]</a>    <span class="k">def</span> <span class="nf">read_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read all files associated to the receipt</span>
+
+<span class="sd">        Args/Kwargs:</span>
+<span class="sd">           None</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">           data: dict; analogue keys to files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">files</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;txt&#39;</span><span class="p">):</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">imread</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="Receipt.clean_ocr"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.clean_ocr">[docs]</a>    <span class="k">def</span> <span class="nf">clean_ocr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clean the output of the OCR</span>
+
+<span class="sd">        Args/Kwargs:</span>
+<span class="sd">           None</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">           text; list(str); cleaned text of newline characters and stuff</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">clean_line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">clean_line</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">clean_line</span> <span class="o">=</span> <span class="n">clean_line</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="n">text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clean_line</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">text</span></div>
+
+<div class="viewcode-block" id="Receipt.fuzzy_search"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.fuzzy_search">[docs]</a>    <span class="k">def</span> <span class="nf">fuzzy_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="mf">0.6</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fuzzy search OCR output for a keyword and its possible value</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">           keyword: str; a keywords after which is fuzzy searched</span>
+
+<span class="sd">        Kwargs:</span>
+<span class="sd">           accuracy: float; accuracy parameter for the fuzzy search algorithm</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">           line: list(str); the line of the closest fuzzy search match</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+            <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">is_match</span> <span class="o">=</span> <span class="n">get_close_matches</span><span class="p">(</span><span class="n">keyword</span><span class="p">,</span> <span class="n">words</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">is_match</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">line</span></div>
+
+<div class="viewcode-block" id="Receipt.parse_total"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.parse_total">[docs]</a>    <span class="k">def</span> <span class="nf">parse_total</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse for the total on the receipt</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">           total: str; argument to overwrite results</span>
+
+<span class="sd">        Kwargs:</span>
+<span class="sd">           None</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">           total: str; matched total on the receipt</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">total</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">total</span>
+        <span class="k">for</span> <span class="n">total_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="o">.</span><span class="n">total_keys</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fuzzy_search</span><span class="p">(</span><span class="n">total_key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">line</span><span class="p">:</span>
+                <span class="c1"># replace commas with dots to facilitate matching</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span>
+                <span class="c1"># parse the total</span>
+                <span class="n">total_float</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="o">.</span><span class="n">total_format</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">total_float</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">total_float</span><span class="o">.</span><span class="n">group</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Receipt.parse_date"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.parse_date">[docs]</a>    <span class="k">def</span> <span class="nf">parse_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse for the date on the receipt</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">           date: str; argument to overwrite results</span>
+
+<span class="sd">        Kwargs:</span>
+<span class="sd">           None</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">           date: str; matched date on the receipt</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">date</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">date</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="o">.</span><span class="n">date_format</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Receipt.parse_time"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.parse_time">[docs]</a>    <span class="k">def</span> <span class="nf">parse_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse for the time on the receipt</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">           time: str; argument to overwrite results</span>
+
+<span class="sd">        Kwargs:</span>
+<span class="sd">           None</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">           time: str; matched time on the receipt</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">time</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">time</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="o">.</span><span class="n">time_format</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Receipt.parse_market"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.parse_market">[docs]</a>    <span class="k">def</span> <span class="nf">parse_market</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">market</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse for the market the receipt is from</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">           market: str; argument to overwrite results</span>
+
+<span class="sd">        Kwargs:</span>
+<span class="sd">           None</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">           market: str; matched market</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">market</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">market</span>
+        <span class="k">for</span> <span class="n">int_accuracy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">accuracy</span> <span class="o">=</span> <span class="n">int_accuracy</span><span class="o">/</span><span class="mf">10.0</span>
+            <span class="k">for</span> <span class="n">market</span><span class="p">,</span> <span class="n">spellings</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="o">.</span><span class="n">markets</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">spelling</span> <span class="ow">in</span> <span class="n">spellings</span><span class="p">:</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fuzzy_search</span><span class="p">(</span><span class="n">spelling</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">line</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">market</span></div>
+
+<div class="viewcode-block" id="Receipt.check_img_id"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.check_img_id">[docs]</a>    <span class="k">def</span> <span class="nf">check_img_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if file_id is found in any pictures of imgs/</span>
+
+<span class="sd">        Args/Kwargs:</span>
+<span class="sd">           None</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">           image; str; name string of the original image in imgs/ matching id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="ow">in</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Receipt</span><span class="o">.</span><span class="n">imgd</span><span class="p">)]):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;File with ID </span><span class="si">{}</span><span class="s2"> not found&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_id</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">image</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Receipt</span><span class="o">.</span><span class="n">imgd</span><span class="p">)</span>
+                         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="ow">in</span> <span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Try putting images into the pentaplex/imgs/ directory...&quot;</span><span class="p">)</span>
+            <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">image</span></div>
+
+<div class="viewcode-block" id="Receipt.check_scanner_id"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.check_scanner_id">[docs]</a>    <span class="k">def</span> <span class="nf">check_scanner_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if file_id is found in prp/ or tmp/</span>
+
+<span class="sd">        Args/Kwargs:</span>
+<span class="sd">           None</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">           dst: str; name string of the scanned image in prp/ or tmp/ matching</span>
+<span class="sd">                     file_id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>  <span class="c1"># first try</span>
+            <span class="n">dst</span> <span class="o">=</span> <span class="p">[</span><span class="n">o</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Receipt</span><span class="o">.</span><span class="n">prpd</span><span class="p">)</span>
+                   <span class="k">if</span> <span class="s2">&quot;dst_&quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="ow">in</span> <span class="n">o</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>  <span class="c1"># second try</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Scan file ID not found in pentaplex/prp/...&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Trying pentaplex/tmpd/...&quot;</span><span class="p">)</span>
+                <span class="n">dst</span> <span class="o">=</span> <span class="p">[</span><span class="n">o</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Receipt</span><span class="o">.</span><span class="n">tmpd</span><span class="p">)</span>
+                       <span class="k">if</span> <span class="s2">&quot;dst_&quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="ow">in</span> <span class="n">o</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Trying to run image scan...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">run_scanner</span><span class="p">()</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Trying to run preprocessing and OCR...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">run_ocr</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">auto</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="n">dst</span> <span class="o">=</span> <span class="p">[</span><span class="n">o</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Receipt</span><span class="o">.</span><span class="n">prpd</span><span class="p">)</span>
+                           <span class="k">if</span> <span class="s2">&quot;dst_&quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="ow">in</span> <span class="n">o</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Can&#39;t find the scanned image matching ID...&quot;</span><span class="p">)</span>
+                    <span class="n">dst</span> <span class="o">=</span> <span class="s2">&quot; None found!&quot;</span>
+        <span class="k">return</span> <span class="n">dst</span></div>
+
+<div class="viewcode-block" id="Receipt.check_ocr_id"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.check_ocr_id">[docs]</a>    <span class="k">def</span> <span class="nf">check_ocr_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if file_id is found in prp/</span>
+
+<span class="sd">        Args/Kwargs:</span>
+<span class="sd">           None</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">           prepd, text: str, str; name string of preprocessed and ocr txt files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">prepid</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">o</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Receipt</span><span class="o">.</span><span class="n">prpd</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="ow">in</span> <span class="n">o</span> <span class="ow">and</span> <span class="s2">&quot;dst_&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">o</span><span class="p">)][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">prepd</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">o</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Receipt</span><span class="o">.</span><span class="n">prpd</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">prepid</span><span class="o">+</span><span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">o</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">o</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Receipt</span><span class="o">.</span><span class="n">txtd</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">prepid</span><span class="o">+</span><span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">o</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Trying to run image scan...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">run_scanner</span><span class="p">()</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Trying to run preprocessing and OCR...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">run_ocr</span><span class="p">()</span>
+                <span class="n">prepid</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">o</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Receipt</span><span class="o">.</span><span class="n">prpd</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="ow">in</span> <span class="n">o</span> <span class="ow">and</span> <span class="s2">&quot;dst_&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">o</span><span class="p">)</span>
+                <span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">prepd</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">o</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Receipt</span><span class="o">.</span><span class="n">prpd</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">prepid</span><span class="o">+</span><span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">o</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">o</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Receipt</span><span class="o">.</span><span class="n">txtd</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">prepid</span><span class="o">+</span><span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">o</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Can&#39;t find the OCR files matching ID...&quot;</span><span class="p">)</span>
+                <span class="n">prepd</span> <span class="o">=</span> <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot; None found!&quot;</span>
+        <span class="k">return</span> <span class="n">prepd</span><span class="p">,</span> <span class="n">text</span></div>
+
+<div class="viewcode-block" id="Receipt.run_scanner"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.run_scanner">[docs]</a>    <span class="k">def</span> <span class="nf">run_scanner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run the scanner.py script</span>
+
+<span class="sd">        Args/Kwargs/Return:</span>
+<span class="sd">           None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">subprocess</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;python &quot;</span> <span class="o">+</span> <span class="n">Receipt</span><span class="o">.</span><span class="n">root</span> <span class="o">+</span> <span class="s2">&quot;scanner.py &quot;</span> \
+              <span class="o">+</span> <span class="n">Receipt</span><span class="o">.</span><span class="n">imgd</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="nb">print</span> <span class="n">p</span><span class="o">.</span><span class="n">communicate</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Receipt.run_ocr"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.run_ocr">[docs]</a>    <span class="k">def</span> <span class="nf">run_ocr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run the ocr.sh script</span>
+
+<span class="sd">        Args/Kwargs/Return:</span>
+<span class="sd">           None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">subprocess</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;bash &quot;</span><span class="o">+</span><span class="n">Receipt</span><span class="o">.</span><span class="n">root</span><span class="o">+</span><span class="s2">&quot;ocr.sh&quot;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="nb">print</span> <span class="n">p</span><span class="o">.</span><span class="n">communicate</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Receipt.print_properties"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.print_properties">[docs]</a>    <span class="k">def</span> <span class="nf">print_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send properties to stdout</span>
+
+<span class="sd">        Args/Kwargs/Return:</span>
+<span class="sd">           None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Receipt #</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_id</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Market: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">market</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Date:   </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">date</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Time:   </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Total:  </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">total</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Receipt.print_text"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.print_text">[docs]</a>    <span class="k">def</span> <span class="nf">print_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send properties to stdout</span>
+
+<span class="sd">        Args/Kwargs/Return:</span>
+<span class="sd">           None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cleaned OCR text:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Receipt.load_configs"><a class="viewcode-back" href="../receipt.html#receipt.Receipt.load_configs">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">load_configs</span><span class="p">(</span><span class="n">config_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load a yaml config file and return a objectified dictionary</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">           config_path: str; path string to the yaml config file</span>
+
+<span class="sd">        Kwargs:</span>
+<span class="sd">           None</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">           config: objectify instance; the read configurations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">docs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">config_path</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">yaml</span>
+            <span class="kn">from</span> <span class="nn">objectify</span> <span class="k">import</span> <span class="n">objectify</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+            <span class="n">docs</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">objectify</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">receipt</span> <span class="o">=</span> <span class="n">Receipt</span><span class="p">(</span><span class="s1">&#39;0162&#39;</span><span class="p">)</span>
+    <span class="n">receipt</span><span class="o">.</span><span class="n">print_properties</span><span class="p">()</span>
+    <span class="c1"># receipt.print_text()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">pentaplex</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, phdenzel.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
