@@ -1,11 +1,25 @@
 #+TITLE: pentaplex
 #+AUTHOR: phdenzel
 
-  pentaplex - 
+  A receipt scanner and reader which makes use of tesseract-ocr and
+  imagemagick.
+  It uses five functionalities (thus the program's name):
+     1. scan receipt image (/edge detection and warp transformation with opencv/)
+     2. preprocess scan (/clean, sharpen, and contrast/)
+     3. run OCR (/tesseract for optical character recognition/)
+     4. analyze OCR output (/with fuzzy finder and preconfigured dictionary/)
+     5. summarize analysis in a csv file
+
+*** Prerequisites
+
+    This program uses
+    - [[https://github.com/tesseract-ocr/][tesseract-ocr]]
+    - [[https://www.imagemagick.org/script/index.php][imagemagick]]
+    - [[https://github.com/opencv/opencv][opencv]]
 
 *** Usage
     
-    To run pentaplex type:
-    #+BEGIN_SRC shell :exports none
-      ./pentaplex <scan.jpg> --out <output.jpg>
+    To run pentaplex type (of course first ~cd~ into repository):
+    #+BEGIN_SRC shell
+      ./pentaplex [optional: auto]
     #+END_SRC
