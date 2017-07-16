@@ -3,7 +3,7 @@
 
   A receipt scanner and reader which makes use of tesseract-ocr and
   imagemagick.
-  It executes five basic functionalities (thus the program's name):
+  It executes five basic functionalities (hence the program's name):
      1. scan receipt image (/edge detection and warp transformation with opencv/)
      2. preprocess scan (/clean, sharpen, and contrast/)
      3. run OCR (/tesseract for optical character recognition/)
