@@ -12,7 +12,7 @@
 
   To prepare for the scanning of the receipts, create a directory called
   ~imgs/~ in the repository, and place pictures of the receipts in it;
-  e.g. in Terminal (after ~cd~ into the repository) type something of the sort:
+  e.g. in Terminal (~cd~ into the repository first) type something of the sort:
 
   #+BEGIN_SRC shell
     mkdir -p imgs/
@@ -28,7 +28,7 @@
 
 *** Usage
     
-    To run pentaplex type (of course first ~cd~ into repository):
+    To run pentaplex, type (of course ~cd~ into repository first):
     #+BEGIN_SRC shell
       ./pentaplex [optional: auto]
     #+END_SRC
