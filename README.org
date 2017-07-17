@@ -10,6 +10,15 @@
      4. analyze OCR output (/with fuzzy finder and preconfigured dictionary/)
      5. summarize analysis in a csv file
 
+  To prepare for the scanning of the receipts, create a directory called
+  ~imgs/~ in the repository, and place pictures of the receipts in it;
+  e.g. in Terminal (after ~cd~ into the repository) type something of the sort:
+
+  #+BEGIN_SRC shell
+    mkdir -p imgs/
+    cp ~/Downloads/*.JPG imgs/
+  #+END_SRC
+
 *** Prerequisites
 
     This program uses
